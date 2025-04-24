@@ -4,6 +4,7 @@ import base64
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
+from datetime import datetime
 
 # --- Load environment variables ---
 load_dotenv()
@@ -32,21 +33,22 @@ def read_log_mode():
 
 log_mode = read_log_mode()
 
+# --- Logging ---
+log_messages = []
+
 def log(message):
     if log_mode == "verbose":
         print(message)
-
-    # Log message to Firestore
-    log_ref = db.collection("backup_logs").document()
-    log_ref.set({
-        "message": message,
-        "timestamp": firestore.SERVER_TIMESTAMP
-    })
-
+    log_messages.append(message)
 
 # --- Collections ---
 source_collection = "users"
 target_collection = "users_backup"
+backlog = "backup_logs"
+
+# Create a new log document for this run
+log_doc_id = datetime.utcnow().isoformat()
+log_ref = db.collection(backlog).document(log_doc_id)
 
 # --- Backup operation ---
 docs = db.collection(source_collection).stream()
@@ -74,3 +76,9 @@ for doc in docs:
             log(f"Updated backup for: {doc.id}")
         else:
             log(f"No changes for: {doc.id}")
+
+# Save all logs in a single document
+log_ref.set({
+    "timestamp": datetime.utcnow(),
+    "logs": log_messages
+})
