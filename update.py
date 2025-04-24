@@ -5,6 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 from datetime import datetime
+import pytz
 
 # --- Load environment variables ---
 load_dotenv()
@@ -47,7 +48,9 @@ target_collection = "users_backup"
 backlog = "backup_logs"
 
 # Create a new log document for this run
-log_doc_id = datetime.utcnow().isoformat()
+india_tz = pytz.timezone("Asia/Kolkata")
+now_india = datetime.now(india_tz)
+log_doc_id = now_india.strftime("%Y-%m-%d_%H-%M-%S")
 log_ref = db.collection(backlog).document(log_doc_id)
 
 # --- Backup operation ---
@@ -79,6 +82,6 @@ for doc in docs:
 
 # Save all logs in a single document
 log_ref.set({
-    "timestamp": datetime.utcnow(),
+    "timestamp": now_india.isoformat(),
     "logs": log_messages
 })
