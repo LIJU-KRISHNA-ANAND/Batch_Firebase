@@ -33,8 +33,8 @@ def read_log_mode():
 log_mode = read_log_mode()
 
 def log(message):
-    if log_mode == "verbose":
-        print(message)
+    with open("backup_log.txt", "a") as f:
+        f.write(message + "\n")
 
 # --- Collections ---
 source_collection = "users"
