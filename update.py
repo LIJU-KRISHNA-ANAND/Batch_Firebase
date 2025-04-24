@@ -33,8 +33,16 @@ def read_log_mode():
 log_mode = read_log_mode()
 
 def log(message):
-    with open("backup_log.txt", "a") as f:
-        f.write(message + "\n")
+    if log_mode == "verbose":
+        print(message)
+
+    # Log message to Firestore
+    log_ref = db.collection("backup_logs").document()
+    log_ref.set({
+        "message": message,
+        "timestamp": firestore.SERVER_TIMESTAMP
+    })
+
 
 # --- Collections ---
 source_collection = "users"
